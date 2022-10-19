@@ -1,0 +1,123 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  email               String                @unique
+  passwordHash        String
+  hashedRT            String?
+  organizationId      String?               @unique @db.Uuid
+  organization        Organization?         @relation(fields: [organizationId], references: [id])
+  organizationOwner   Organization?         @relation("organization_owner")
+  userDetails         UserDetails?
+  warehousePermission WarehousePermission[]
+
+  @@map("users")
+}
+
+model UserDetails {
+  userId    String   @id @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User   @relation(fields: [userId], references: [id])
+  firstName   String
+  lastName    String
+  phoneNumber String
+  about       String
+
+  @@map("user_details")
+}
+
+model Organization {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  description String?
+  owner       User        @relation(name: "organization_owner", fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ownerId     String      @unique @db.Uuid
+  address     Address     @relation(fields: [addressId], references: [id])
+  addressId   String      @unique @db.Uuid
+  members     User[]
+  warehouses  Warehouse[]
+  products    Product[]
+
+  @@map("organizations")
+}
+
+model Address {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  country       String
+  region        String
+  city          String
+  streetAddress String
+  postcode      String
+
+  Organization Organization?
+  Warehouse    Warehouse?
+
+  @@map("addresses")
+}
+
+model Warehouse {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name                String
+  organization        Organization?         @relation(fields: [organizationId], references: [id])
+  organizationId      String?               @db.Uuid
+  address             Address               @relation(fields: [addressId], references: [id])
+  addressId           String                @unique @db.Uuid
+  warehousePermission WarehousePermission[]
+
+  @@map("warehouses")
+}
+
+model WarehousePermission {
+  warehouseId String     @db.Uuid
+  warehouse   Warehouse  @relation(fields: [warehouseId], references: [id])
+  userId      String     @db.Uuid
+  user        User       @relation(fields: [userId], references: [id])
+  permission  Permission @default(full)
+
+  @@id([warehouseId, userId])
+}
+
+model Product {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name        String
+  description String
+
+  Organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?       @db.Uuid
+
+  // TODO: Vlastné atribúty a skladové jednotky
+}
+
+enum Permission {
+  full
+  edit_inventory
+  edit_settings
+  read
+}
