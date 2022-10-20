@@ -95,7 +95,7 @@ export class AuthService {
         { sub: userId, email: email },
         {
           secret: 'at-secret',
-          expiresIn: 60 * 15,
+          expiresIn: '30s',
         },
       ),
       this.jwt.signAsync(

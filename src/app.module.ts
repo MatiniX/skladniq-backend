@@ -5,9 +5,18 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { AtGuard } from './common/guards';
 import { PrismaModule } from './prisma/prisma.module';
+import { OrganizationModule } from './organizations/organization.module';
+import { UserModule } from './user/user.module';
+import { AddressModule } from './address/address.module';
 
 @Module({
-  imports: [AuthModule, PrismaModule],
+  imports: [
+    AuthModule,
+    PrismaModule,
+    OrganizationModule,
+    UserModule,
+    AddressModule,
+  ],
   controllers: [AppController],
   providers: [
     {

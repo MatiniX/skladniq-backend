@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Post,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -12,6 +13,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { Response } from 'express';
 import { CurrentUser, Public } from 'src/common/decorators';
 import { RtGuard } from 'src/common/guards/rt.guard';
 import { AuthService } from './auth.service';
@@ -30,8 +32,18 @@ export class AuthController {
     description: 'User has been successfuly registered',
     type: Tokens,
   })
-  signupLocal(@Body() dto: SignUpDto): Promise<Tokens> {
-    return this.authService.signupLocal(dto);
+  async signupLocal(
+    @Res({ passthrough: true }) res: Response,
+    @Body() dto: SignUpDto,
+  ): Promise<Tokens> {
+    const tokens = await this.authService.signupLocal(dto);
+
+    res.cookie('rt', tokens.refreshToken, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return tokens;
   }
 
   @Public()
@@ -39,8 +51,18 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ description: 'User successfuly signed in', type: Tokens })
   @ApiForbiddenResponse({ description: 'Invalid credentials' })
-  signinLocal(@Body() dto: SignInDto) {
-    return this.authService.signinLocal(dto);
+  async signinLocal(
+    @Res({ passthrough: true }) res: Response,
+    @Body() dto: SignInDto,
+  ) {
+    const tokens = await this.authService.signinLocal(dto);
+
+    res.cookie('rt', tokens.refreshToken, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
+    return tokens;
   }
 
   @Post('/signout')
