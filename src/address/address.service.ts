@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateAddressDto } from './dtos';
+import { UpdateAddressDto } from './dtos/update-address.dto';
 
 @Injectable()
 export class AddressService {
@@ -18,5 +19,25 @@ export class AddressService {
     });
 
     return newAddress;
+  }
+
+  async updateAddress(dto: UpdateAddressDto) {
+    const { city, country, id, postcode, region, streetAddress } = dto;
+    try {
+      const updatedAddress = await this.prisma.address.update({
+        where: { id },
+        data: {
+          country,
+          region,
+          city,
+          postcode,
+          streetAddress,
+        },
+      });
+
+      return updatedAddress;
+    } catch (error) {
+      throw new NotFoundException('Address with this id does not exists');
+    }
   }
 }

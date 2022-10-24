@@ -1,6 +1,12 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
+import {
+  AT_EXPIRATION,
+  AT_SECRET,
+  RT_EXPIRATION,
+  RT_SECRET,
+} from 'src/common/constants';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SignInDto, SignUpDto, Tokens } from './dtos';
 
@@ -94,15 +100,15 @@ export class AuthService {
       this.jwt.signAsync(
         { sub: userId, email: email },
         {
-          secret: 'at-secret',
-          expiresIn: '30s',
+          secret: AT_SECRET,
+          expiresIn: AT_EXPIRATION,
         },
       ),
       this.jwt.signAsync(
         { sub: userId, email: email },
         {
-          secret: 'rt-secret',
-          expiresIn: '7d',
+          secret: RT_SECRET,
+          expiresIn: RT_EXPIRATION,
         },
       ),
     ]);

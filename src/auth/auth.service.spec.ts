@@ -18,6 +18,7 @@ const userArray: User[] = [
     hashedRT: testRtHash,
     createdAt: new Date(),
     updatedAt: new Date(),
+    organizationId: uuidv4(),
   },
 ];
 
@@ -38,7 +39,7 @@ const jwt = {
   sign: {},
 };
 
-describe('CatService', () => {
+describe('Auth service', () => {
   let service: AuthService;
   let prisma: PrismaService;
   let jwtService: JwtService;

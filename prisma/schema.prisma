@@ -18,7 +18,7 @@ model User {
   email               String                @unique
   passwordHash        String
   hashedRT            String?
-  organizationId      String?               @unique @db.Uuid
+  organizationId      String?               @db.Uuid
   organization        Organization?         @relation(fields: [organizationId], references: [id])
   organizationOwner   Organization?         @relation("organization_owner")
   userDetails         UserDetails?
@@ -32,11 +32,11 @@ model UserDetails {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user        User   @relation(fields: [userId], references: [id])
+  user        User    @relation(fields: [userId], references: [id])
   firstName   String
   lastName    String
-  phoneNumber String
-  about       String
+  phoneNumber String?
+  about       String?
 
   @@map("user_details")
 }
@@ -48,6 +48,7 @@ model Organization {
 
   name        String
   description String?
+  active      Boolean     @default(true)
   owner       User        @relation(name: "organization_owner", fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   ownerId     String      @unique @db.Uuid
   address     Address     @relation(fields: [addressId], references: [id])
@@ -70,8 +71,8 @@ model Address {
   streetAddress String
   postcode      String
 
-  Organization Organization?
-  Warehouse    Warehouse?
+  organization Organization?
+  warehouse    Warehouse?
 
   @@map("addresses")
 }
@@ -87,8 +88,26 @@ model Warehouse {
   address             Address               @relation(fields: [addressId], references: [id])
   addressId           String                @unique @db.Uuid
   warehousePermission WarehousePermission[]
+  warehouseProduct    WarehouseProduct[]
 
   @@map("warehouses")
+}
+
+model WarehouseProduct {
+  warehouseId String    @db.Uuid
+  warehouse   Warehouse @relation(fields: [warehouseId], references: [id])
+  productId   String    @db.Uuid
+  product     Product   @relation(fields: [productId], references: [id])
+
+  unitsInStock      Int
+  maxCapacity       Int
+  unlimitedCapacity Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@id([warehouseId, productId])
+  @@map("warehouse_products")
 }
 
 model WarehousePermission {
@@ -99,6 +118,7 @@ model WarehousePermission {
   permission  Permission @default(full)
 
   @@id([warehouseId, userId])
+  @@map("warehouse_permissions")
 }
 
 model Product {
@@ -108,11 +128,31 @@ model Product {
 
   name        String
   description String
+  storageUnit StorageUnit
+  metricUnit  Float
 
-  Organization   Organization? @relation(fields: [organizationId], references: [id])
-  organizationId String?       @db.Uuid
+  organization     Organization?      @relation(fields: [organizationId], references: [id])
+  organizationId   String?            @db.Uuid
+  attributes       ProductAttribute[]
+  warehouseProduct WarehouseProduct[]
 
-  // TODO: Vlastné atribúty a skladové jednotky
+  @@map("products")
+}
+
+model ProductAttribute {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name                String
+  unit                StorageUnit
+  valuePerStorageUnit Float
+  displayValue        String
+  metricUnit          Float
+  product             Product?    @relation(fields: [productId], references: [id])
+  productId           String?     @db.Uuid
+
+  @@map("product_attributes")
 }
 
 enum Permission {
@@ -120,4 +160,12 @@ enum Permission {
   edit_inventory
   edit_settings
   read
+}
+
+enum StorageUnit {
+  quantity
+  weight
+  length
+  area
+  volume
 }

@@ -1,7 +1,21 @@
-import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AddressService } from './address.service';
 import { CreateAddressDto } from './dtos';
+import { UpdateAddressDto } from './dtos/update-address.dto';
 
 @ApiTags('address')
 @ApiBearerAuth()
@@ -14,5 +28,13 @@ export class AddressController {
   @ApiCreatedResponse()
   createAddress(@Body() dto: CreateAddressDto) {
     return this.addressService.createAddress(dto);
+  }
+
+  @Patch('/update')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse()
+  @ApiNotFoundResponse()
+  updateAddress(@Body() dto: UpdateAddressDto) {
+    return this.addressService.updateAddress(dto);
   }
 }
