@@ -6,7 +6,15 @@ import {
 import { Organization } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
-import { CreateOrganizationDto, UpdateOrganizationDto } from './dtos';
+import {
+  AddRoleDto,
+  CreateOrganizationDto,
+  CreateWarehousePermissionDto,
+  RemoveRoleDto,
+  RemoveWarehousePermissionDto,
+  UpdateOrganizationDto,
+  UpdateWarehousePermissionDto,
+} from './dtos';
 
 @Injectable()
 export class OrganizationService {
@@ -135,6 +143,50 @@ export class OrganizationService {
     return updatedOrganization.members;
   }
 
+  async addRole(dto: AddRoleDto) {
+    try {
+      const user = this.prisma.user.update({
+        where: {
+          id: dto.userId,
+        },
+        data: {
+          roles: {
+            push: dto.role,
+          },
+        },
+      });
+
+      return user;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async removeRole(dto: RemoveRoleDto) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: {
+          id: dto.userId,
+        },
+      });
+
+      const updatedRoles = user.roles.filter((r) => r !== dto.role);
+
+      await this.prisma.user.update({
+        where: {
+          id: dto.userId,
+        },
+        data: {
+          roles: updatedRoles,
+        },
+      });
+
+      return true;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
   async removeMember(organizationId: string, memberId: string) {
     const updatedMembers = await this.prisma.organization.update({
       where: {
@@ -153,5 +205,66 @@ export class OrganizationService {
     });
 
     return updatedMembers;
+  }
+
+  async createWarehousePermission(dto: CreateWarehousePermissionDto) {
+    try {
+      const newPermission = await this.prisma.warehousePermission.create({
+        data: {
+          warehouse: {
+            connect: {
+              id: dto.warehouseId,
+            },
+          },
+          user: {
+            connect: {
+              id: dto.userId,
+            },
+          },
+          permission: dto.permission,
+        },
+      });
+
+      return newPermission;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async updateWarehousePermission(dto: UpdateWarehousePermissionDto) {
+    try {
+      const updatedPermission = await this.prisma.warehousePermission.update({
+        where: {
+          warehouseId_userId: {
+            userId: dto.userId,
+            warehouseId: dto.warehouseId,
+          },
+        },
+        data: {
+          permission: dto.permission,
+        },
+      });
+
+      return updatedPermission;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async removeWarehousePermission(dto: RemoveWarehousePermissionDto) {
+    try {
+      await this.prisma.warehousePermission.delete({
+        where: {
+          warehouseId_userId: {
+            userId: dto.userId,
+            warehouseId: dto.warehouseId,
+          },
+        },
+      });
+
+      return true;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
   }
 }

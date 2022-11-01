@@ -2,3 +2,8 @@ export * from './create-organization.dto';
 export * from './update-organization.dto';
 export * from './add-member.dto';
 export * from './remove-member.dto';
+export * from './create-warehouse-permission.dto';
+export * from './update-warehouse-permission.dto';
+export * from './remove-warehouse-permission.dto';
+export * from './add-role.dto';
+export * from './remove-role.dto';

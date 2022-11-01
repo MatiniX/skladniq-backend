@@ -9,6 +9,7 @@ import {
   Post,
 } from '@nestjs/common';
 import {
+  ApiBadRequestResponse,
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
@@ -20,9 +21,14 @@ import {
 import { CurrentUser } from 'src/common/decorators';
 import {
   AddMemberDto,
+  AddRoleDto,
   CreateOrganizationDto,
+  CreateWarehousePermissionDto,
   RemoveMemberDto,
+  RemoveRoleDto,
+  RemoveWarehousePermissionDto,
   UpdateOrganizationDto,
+  UpdateWarehousePermissionDto,
 } from './dtos';
 import { OrganizationService } from './organization.service';
 
@@ -47,16 +53,15 @@ export class OrganizationController {
     return this.organizationService.updateOrganization(dto);
   }
 
-  @Delete('/:id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiParam({ name: 'id', description: 'Id of the organization being closed' })
-  @ApiNoContentResponse()
+  @Patch('/update-permission')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse()
   @ApiNotFoundResponse()
-  closeOrganization(@Param('id') id: string) {
-    return this.organizationService.closeOrganization(id);
+  updateWarehousePermission(@Body() dto: UpdateWarehousePermissionDto) {
+    return this.organizationService.updateWarehousePermission(dto);
   }
 
-  @Post('/addMemebr')
+  @Post('/add-member')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse()
   @ApiNotFoundResponse()
@@ -64,7 +69,31 @@ export class OrganizationController {
     return this.organizationService.addMember(dto.organizationId, dto.memberId);
   }
 
-  @Patch('/removeMember')
+  @Post('/add-role')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse()
+  @ApiNotFoundResponse()
+  addRole(@Body() dto: AddRoleDto) {
+    return this.organizationService.addRole(dto);
+  }
+
+  @Post('/create-permission')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOkResponse()
+  @ApiBadRequestResponse()
+  createWarehousePermission(@Body() dto: CreateWarehousePermissionDto) {
+    return this.organizationService.createWarehousePermission(dto);
+  }
+
+  @Delete('/remove-permission')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse()
+  @ApiNotFoundResponse()
+  removeWarehousePermission(@Body() dto: RemoveWarehousePermissionDto) {
+    return this.organizationService.removeWarehousePermission(dto);
+  }
+
+  @Delete('/remove-member')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse()
   @ApiNotFoundResponse()
@@ -73,5 +102,21 @@ export class OrganizationController {
       dto.organizationId,
       dto.memberId,
     );
+  }
+  @Delete('/remove-role')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse()
+  @ApiBadRequestResponse()
+  removeRole(@Body() dto: RemoveRoleDto) {
+    return this.organizationService.removeRole(dto);
+  }
+
+  @Delete('/:id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiParam({ name: 'id', description: 'Id of the organization being closed' })
+  @ApiNoContentResponse()
+  @ApiNotFoundResponse()
+  closeOrganization(@Param('id') id: string) {
+    return this.organizationService.closeOrganization(id);
   }
 }

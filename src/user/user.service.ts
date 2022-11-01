@@ -36,6 +36,16 @@ export class UserService {
     return organizationMembers;
   }
 
+  async getUserWarehousePermissions(userId: string) {
+    const permissions = await this.prisma.warehousePermission.findMany({
+      where: {
+        userId,
+      },
+    });
+
+    return permissions;
+  }
+
   async createUserDetails(dto: CreateUserDetailsDto) {
     const { firstName, lastName, userId, about, phoneNumber } = dto;
     const userDetails = await this.prisma.userDetails.create({

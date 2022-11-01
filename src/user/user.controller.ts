@@ -41,6 +41,13 @@ export class UserController {
     return this.userService.getUsersByOrganization(organizationId);
   }
 
+  @Get('/warehouse-permissions/:userId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse()
+  getUserWarehousePermission(@Param('userId', ParseUUIDPipe) userId: string) {
+    return this.userService.getUserWarehousePermissions(userId);
+  }
+
   @Post('/user-details')
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse()
