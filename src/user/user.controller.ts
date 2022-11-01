@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  ParseUUIDPipe,
   Patch,
   Post,
 } from '@nestjs/common';
@@ -15,7 +16,6 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { isUUID } from 'class-validator';
 import { CreateUserDetailsDto, UpdateUserDetailsDto } from './dtos';
 import { UserService } from './user.service';
 
@@ -28,24 +28,16 @@ export class UserController {
   @Get(':userId')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse()
-  getUserById(@Param('userId') userId: string) {
-    if (!isUUID(userId)) {
-      throw new BadRequestException('UserId provided is not in uuid format');
-    }
-
+  getUserById(@Param('userId', ParseUUIDPipe) userId: string) {
     return this.userService.getUserById(userId);
   }
 
   @Get('/organization/:organizationId')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse()
-  getUsersByOrganization(@Param('organizationId') organizationId: string) {
-    if (!isUUID(organizationId)) {
-      throw new BadRequestException(
-        'OrganizationId provided is not in uuid format',
-      );
-    }
-
+  getUsersByOrganization(
+    @Param('organizationId', ParseUUIDPipe) organizationId: string,
+  ) {
     return this.userService.getUsersByOrganization(organizationId);
   }
 

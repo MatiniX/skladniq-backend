@@ -7,7 +7,7 @@ import { UpdateAddressDto } from './dtos/update-address.dto';
 export class AddressService {
   constructor(private prisma: PrismaService) {}
 
-  async createAddress(dto: CreateAddressDto) {
+  async createAddressForOrganization(dto: CreateAddressDto) {
     const newAddress = await this.prisma.address.create({
       data: {
         country: dto.country,
@@ -15,6 +15,30 @@ export class AddressService {
         city: dto.city,
         streetAddress: dto.streetAddress,
         postcode: dto.postcode,
+        organization: {
+          connect: {
+            id: dto.objectId,
+          },
+        },
+      },
+    });
+
+    return newAddress;
+  }
+
+  async createAddressForWarehouse(dto: CreateAddressDto) {
+    const newAddress = await this.prisma.address.create({
+      data: {
+        country: dto.country,
+        region: dto.region,
+        city: dto.city,
+        streetAddress: dto.streetAddress,
+        postcode: dto.postcode,
+        warehouse: {
+          connect: {
+            id: dto.objectId,
+          },
+        },
       },
     });
 

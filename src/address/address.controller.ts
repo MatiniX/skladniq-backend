@@ -14,8 +14,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { AddressService } from './address.service';
-import { CreateAddressDto } from './dtos';
-import { UpdateAddressDto } from './dtos/update-address.dto';
+import { CreateAddressDto, UpdateAddressDto } from './dtos';
 
 @ApiTags('address')
 @ApiBearerAuth()
@@ -23,11 +22,18 @@ import { UpdateAddressDto } from './dtos/update-address.dto';
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
-  @Post('/create')
+  @Post('/organization/create')
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse()
-  createAddress(@Body() dto: CreateAddressDto) {
-    return this.addressService.createAddress(dto);
+  createAddressForOrganization(@Body() dto: CreateAddressDto) {
+    return this.addressService.createAddressForOrganization(dto);
+  }
+
+  @Post('/warehouse/create')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiCreatedResponse()
+  createAddressForWarehouse(@Body() dto: CreateAddressDto) {
+    return this.addressService.createAddressForWarehouse(dto);
   }
 
   @Patch('/update')

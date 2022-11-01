@@ -23,6 +23,7 @@ model User {
   organizationOwner   Organization?         @relation("organization_owner")
   userDetails         UserDetails?
   warehousePermission WarehousePermission[]
+  roles               OraganizationRole[]
 
   @@map("users")
 }
@@ -82,7 +83,9 @@ model Warehouse {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name                String
+  name   String
+  active Boolean @default(true)
+
   organization        Organization?         @relation(fields: [organizationId], references: [id])
   organizationId      String?               @db.Uuid
   address             Address               @relation(fields: [addressId], references: [id])
@@ -168,4 +171,13 @@ enum StorageUnit {
   length
   area
   volume
+}
+
+enum OraganizationRole {
+  employee
+  product_manager
+  warehouse_manager
+  employee_manager
+  organization_manager
+  owner
 }
