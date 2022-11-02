@@ -6,6 +6,7 @@ import { AppModule } from 'src/app.module';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SignUpDto } from 'src/auth/dtos';
 import { SignInDto } from 'src/auth/dtos/signin.dto';
+import * as cookieParser from 'cookie-parser';
 
 const signUpDto: SignUpDto = { email: 'test@e2e.com', password: 'passw0rd' };
 const signInDto: SignInDto = { email: 'test@e2e.com', password: 'passw0rd' };
@@ -28,6 +29,7 @@ describe('Auth (e2e)', () => {
     app = moduleFixture.createNestApplication();
     prisma = app.get<PrismaService>(PrismaService);
 
+    app.use(cookieParser());
     useContainer(app.select(AppModule), { fallbackOnErrors: true });
     app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
 
@@ -89,7 +91,7 @@ describe('Auth (e2e)', () => {
 
       const { body, status } = await request(app.getHttpServer())
         .post('/auth/refresh')
-        .set('Authorization', 'Bearer ' + refreshToken)
+        .set('Cookie', 'rt=' + refreshToken)
         .send();
 
       expect(status).toBe(200);

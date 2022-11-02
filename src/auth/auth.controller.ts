@@ -8,6 +8,8 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import {
+  ApiBearerAuth,
+  ApiCookieAuth,
   ApiCreatedResponse,
   ApiForbiddenResponse,
   ApiOkResponse,
@@ -67,6 +69,7 @@ export class AuthController {
 
   @Post('/signout')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
   @ApiOkResponse({ description: 'User successfuly signed out' })
   signout(@CurrentUser('sub') userId: string) {
     return this.authService.signout(userId);
@@ -76,6 +79,7 @@ export class AuthController {
   @UseGuards(RtGuard)
   @Post('/refresh')
   @HttpCode(HttpStatus.OK)
+  @ApiCookieAuth()
   @ApiOkResponse({
     description: 'User successfuly updated his tokens',
     type: Tokens,

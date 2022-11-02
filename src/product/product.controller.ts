@@ -11,6 +11,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,6 +20,8 @@ import {
   ApiOkResponse,
   ApiNoContentResponse,
 } from '@nestjs/swagger';
+import { OrganizationRoles } from 'src/common/decorators';
+import { OrganizationRolesGuard } from 'src/common/guards/organization-role.guard';
 import { toBoolean } from 'src/common/helpers';
 import {
   AddProductAttributeDto,
@@ -53,6 +56,8 @@ export class ProductController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(OrganizationRolesGuard)
+  @OrganizationRoles('product_manager')
   @ApiCreatedResponse()
   createProduct(@Body() dto: CreateProductDto) {
     return this.productService.createProduct(dto);
@@ -60,6 +65,8 @@ export class ProductController {
 
   @Patch()
   @HttpCode(HttpStatus.OK)
+  @UseGuards(OrganizationRolesGuard)
+  @OrganizationRoles('product_manager')
   @ApiOkResponse()
   updateProduct(@Body() dto: UpdateProductDto) {
     return this.productService.updateProduct(dto);
@@ -67,6 +74,8 @@ export class ProductController {
 
   @Post('attribute')
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(OrganizationRolesGuard)
+  @OrganizationRoles('product_manager')
   @ApiCreatedResponse()
   addProductAttribute(@Body() dto: AddProductAttributeDto) {
     return this.productService.addProductAttribute(dto);
@@ -74,6 +83,8 @@ export class ProductController {
 
   @Delete('attribute/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @UseGuards(OrganizationRolesGuard)
+  @OrganizationRoles('product_manager')
   @ApiNoContentResponse()
   removeProductAttribute(@Param('id', ParseUUIDPipe) attributeId: string) {
     return this.productService.removeProductAttribute(attributeId);

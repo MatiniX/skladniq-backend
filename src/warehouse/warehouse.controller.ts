@@ -10,6 +10,7 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,6 +20,8 @@ import {
   ApiNoContentResponse,
   ApiParam,
 } from '@nestjs/swagger';
+import { OrganizationRoles } from 'src/common/decorators';
+import { OrganizationRolesGuard } from 'src/common/guards/organization-role.guard';
 import {
   AddWarehouseProductDto,
   CreateWarehouseDto,
@@ -55,6 +58,8 @@ export class WarehouseController {
 
   @Post('create')
   @HttpCode(HttpStatus.CREATED)
+  @UseGuards(OrganizationRolesGuard)
+  @OrganizationRoles('warehouse_manager')
   @ApiCreatedResponse()
   createWarehouse(@Body() dto: CreateWarehouseDto) {
     return this.warehouseService.createWarehouse(dto);

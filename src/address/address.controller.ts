@@ -22,6 +22,12 @@ import { CreateAddressDto, UpdateAddressDto } from './dtos';
 export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
+  @Post('/create')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiCreatedResponse()
+  createAddress(@Body() dto: CreateAddressDto) {
+    return this.addressService.createAddress(dto);
+  }
   @Post('/organization/create')
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse()

@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBadRequestResponse,
@@ -18,7 +19,8 @@ import {
   ApiParam,
   ApiTags,
 } from '@nestjs/swagger';
-import { CurrentUser } from 'src/common/decorators';
+import { CurrentUser, OrganizationRoles } from 'src/common/decorators';
+import { OrganizationRolesGuard } from 'src/common/guards/organization-role.guard';
 import {
   AddMemberDto,
   AddRoleDto,
@@ -34,6 +36,7 @@ import { OrganizationService } from './organization.service';
 
 @ApiTags('organizations')
 @ApiBearerAuth()
+@UseGuards(OrganizationRolesGuard)
 @Controller('organizations')
 export class OrganizationController {
   constructor(private organizationService: OrganizationService) {}
@@ -47,6 +50,7 @@ export class OrganizationController {
 
   @Patch('/update')
   @HttpCode(HttpStatus.OK)
+  @OrganizationRoles('organization_manager')
   @ApiOkResponse()
   @ApiNotFoundResponse()
   updateOrganization(@Body() dto: UpdateOrganizationDto) {
@@ -55,6 +59,7 @@ export class OrganizationController {
 
   @Patch('/update-permission')
   @HttpCode(HttpStatus.OK)
+  @OrganizationRoles('warehouse_manager')
   @ApiOkResponse()
   @ApiNotFoundResponse()
   updateWarehousePermission(@Body() dto: UpdateWarehousePermissionDto) {
@@ -63,6 +68,7 @@ export class OrganizationController {
 
   @Post('/add-member')
   @HttpCode(HttpStatus.OK)
+  @OrganizationRoles('employee_manager')
   @ApiOkResponse()
   @ApiNotFoundResponse()
   addMember(@Body() dto: AddMemberDto) {
@@ -71,6 +77,7 @@ export class OrganizationController {
 
   @Post('/add-role')
   @HttpCode(HttpStatus.OK)
+  @OrganizationRoles('employee_manager')
   @ApiOkResponse()
   @ApiNotFoundResponse()
   addRole(@Body() dto: AddRoleDto) {
@@ -79,6 +86,7 @@ export class OrganizationController {
 
   @Post('/create-permission')
   @HttpCode(HttpStatus.CREATED)
+  @OrganizationRoles('warehouse_manager')
   @ApiOkResponse()
   @ApiBadRequestResponse()
   createWarehousePermission(@Body() dto: CreateWarehousePermissionDto) {
@@ -87,6 +95,7 @@ export class OrganizationController {
 
   @Delete('/remove-permission')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @OrganizationRoles('warehouse_manager')
   @ApiNoContentResponse()
   @ApiNotFoundResponse()
   removeWarehousePermission(@Body() dto: RemoveWarehousePermissionDto) {
@@ -95,6 +104,7 @@ export class OrganizationController {
 
   @Delete('/remove-member')
   @HttpCode(HttpStatus.OK)
+  @OrganizationRoles('employee_manager')
   @ApiOkResponse()
   @ApiNotFoundResponse()
   removeMember(@Body() dto: RemoveMemberDto) {
@@ -105,6 +115,7 @@ export class OrganizationController {
   }
   @Delete('/remove-role')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @OrganizationRoles('employee_manager')
   @ApiNoContentResponse()
   @ApiBadRequestResponse()
   removeRole(@Body() dto: RemoveRoleDto) {
@@ -113,6 +124,7 @@ export class OrganizationController {
 
   @Delete('/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
+  @OrganizationRoles('owner')
   @ApiParam({ name: 'id', description: 'Id of the organization being closed' })
   @ApiNoContentResponse()
   @ApiNotFoundResponse()

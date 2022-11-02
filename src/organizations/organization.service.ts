@@ -55,6 +55,7 @@ export class OrganizationService {
       },
       data: {
         organizationId: newOrganization.id,
+        roles: { set: 'owner' },
       },
     });
 
@@ -133,10 +134,25 @@ export class OrganizationService {
           connect: {
             id: memberId,
           },
+          update: {
+            where: { id: memberId },
+            data: {
+              roles: {
+                set: 'employee',
+              },
+            },
+          },
         },
       },
       include: {
-        members: true,
+        members: {
+          select: {
+            id: true,
+            roles: true,
+            email: true,
+            userDetails: true,
+          },
+        },
       },
     });
 
@@ -153,6 +169,12 @@ export class OrganizationService {
           roles: {
             push: dto.role,
           },
+        },
+        select: {
+          id: true,
+          roles: true,
+          email: true,
+          organizationId: true,
         },
       });
 
@@ -194,13 +216,24 @@ export class OrganizationService {
       },
       data: {
         members: {
+          update: {
+            where: { id: memberId },
+            data: { roles: { set: [] } },
+          },
           disconnect: {
             id: memberId,
           },
         },
       },
       select: {
-        members: true,
+        members: {
+          select: {
+            id: true,
+            roles: true,
+            email: true,
+            userDetails: true,
+          },
+        },
       },
     });
 
