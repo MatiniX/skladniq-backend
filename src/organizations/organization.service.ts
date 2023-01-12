@@ -23,6 +23,18 @@ export class OrganizationService {
     private userService: UserService,
   ) {}
 
+  async getOrganizationById(id: string) {
+    const organization = await this.prisma.organization.findUnique({
+      where: { id },
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization does not exist');
+    }
+
+    return organization;
+  }
+
   async createOrganization(userId: string, dto: CreateOrganizationDto) {
     // check if user has an exisiting organization
     const user = await this.userService.getUserById(userId);
@@ -39,7 +51,13 @@ export class OrganizationService {
         name: dto.name,
         description: dto.description,
         address: {
-          connect: { id: dto.addressId },
+          create: {
+            city: dto.city,
+            country: dto.country,
+            postcode: dto.postcode,
+            region: dto.region,
+            streetAddress: dto.streetAddress,
+          },
         },
         owner: {
           connect: {

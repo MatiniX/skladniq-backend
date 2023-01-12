@@ -1,9 +1,6 @@
 import { OraganizationRole } from '@prisma/client';
+import { JwtPayload } from './jwt-payload.type';
 
-export type JwtPayloadWithRt = {
-  email: string;
-  sub: number;
-  roles: OraganizationRole[];
-  organizationId: string;
+export type JwtPayloadWithRt = JwtPayload & {
   refreshToken: string;
 };

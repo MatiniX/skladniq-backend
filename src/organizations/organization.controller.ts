@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Param,
@@ -40,6 +41,13 @@ import { OrganizationService } from './organization.service';
 @Controller('organizations')
 export class OrganizationController {
   constructor(private organizationService: OrganizationService) {}
+
+  @Get('/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse()
+  getOrganizationById(@Param('id') id: string) {
+    return this.organizationService.getOrganizationById(id);
+  }
 
   @Post('/create')
   @HttpCode(HttpStatus.CREATED)

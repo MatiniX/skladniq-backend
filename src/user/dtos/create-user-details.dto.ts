@@ -3,11 +3,6 @@ import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateUserDetailsDto {
   @ApiProperty()
-  @IsUUID()
-  @IsNotEmpty()
-  userId: string;
-
-  @ApiProperty()
   @IsString()
   @IsNotEmpty()
   firstName: string;

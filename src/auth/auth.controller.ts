@@ -1,6 +1,8 @@
 import {
   Body,
   Controller,
+  Delete,
+  Get,
   HttpCode,
   HttpStatus,
   Post,
@@ -19,8 +21,9 @@ import { Response } from 'express';
 import { CurrentUser, Public } from 'src/common/decorators';
 import { RtGuard } from 'src/common/guards/rt.guard';
 import { AuthService } from './auth.service';
-import { SignUpDto, Tokens } from './dtos';
+import { CurrentUserDto, SignUpDto, Tokens } from './dtos';
 import { SignInDto } from './dtos/signin.dto';
+import { JwtPayload } from './types';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -43,6 +46,8 @@ export class AuthController {
     res.cookie('rt', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 60 * 60 * 24 * 7,
+      sameSite: 'none',
+      secure: true,
     });
 
     return tokens;
@@ -62,12 +67,14 @@ export class AuthController {
     res.cookie('rt', tokens.refreshToken, {
       httpOnly: true,
       maxAge: 60 * 60 * 24 * 7,
+      sameSite: 'none',
+      secure: true,
     });
 
     return tokens;
   }
 
-  @Post('/signout')
+  @Delete('/signout')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
   @ApiOkResponse({ description: 'User successfuly signed out' })
@@ -85,7 +92,30 @@ export class AuthController {
     type: Tokens,
   })
   @ApiForbiddenResponse({ description: 'Invalid refresh token' })
-  refreshTokens(@CurrentUser() user) {
-    return this.authService.refreshTokens(user['sub'], user['refreshToken']);
+  async refreshTokens(
+    @CurrentUser() user,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const tokens = await this.authService.refreshTokens(
+      user['sub'],
+      user['refreshToken'],
+    );
+
+    res.cookie('rt', tokens.refreshToken, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 24 * 7,
+      sameSite: 'none',
+      secure: true,
+    });
+
+    return tokens;
+  }
+
+  @Get('/me')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth()
+  @ApiOkResponse({ type: CurrentUserDto })
+  currentUser(@CurrentUser() user): CurrentUserDto {
+    return user;
   }
 }

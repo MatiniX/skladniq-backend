@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -10,6 +10,7 @@ import { UserModule } from './user/user.module';
 import { AddressModule } from './address/address.module';
 import { WarehouseModule } from './warehouse/warehouse.module';
 import { ProductModule } from './product/product.module';
+import { HttpsRedirectMiddleware } from './common/middleware';
 
 @Module({
   imports: [
@@ -30,4 +31,8 @@ import { ProductModule } from './product/product.module';
     AppService,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(HttpsRedirectMiddleware).forRoutes('*');
+  }
+}

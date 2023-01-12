@@ -1,15 +1,51 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateUserDetailsDto, UpdateUserDetailsDto } from './dtos';
+import {
+  CreateUserDetailsDto,
+  UpdateUserDetailsDto,
+  UserDetailsDto,
+} from './dtos';
 
 @Injectable()
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
+  async getUserDetails(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    const userDetails = await this.prisma.userDetails.findUnique({
+      where: { userId },
+      select: {
+        firstName: true,
+        lastName: true,
+        phoneNumber: true,
+        about: true,
+      },
+    });
+    const organization = await this.prisma.organization.findUnique({
+      where: { id: user.organizationId },
+    });
+
+    return { organizationName: organization.name, ...userDetails };
+  }
+
   async getUserById(userId: string) {
     const user = await this.prisma.user.findUnique({
       where: {
         id: userId,
+      },
+      select: {
+        id: true,
+        email: true,
+        organizationId: true,
+        roles: true,
+        userDetails: {
+          select: {
+            firstName: true,
+            lastName: true,
+            about: true,
+            phoneNumber: true,
+          },
+        },
       },
     });
 
@@ -46,8 +82,8 @@ export class UserService {
     return permissions;
   }
 
-  async createUserDetails(dto: CreateUserDetailsDto) {
-    const { firstName, lastName, userId, about, phoneNumber } = dto;
+  async createUserDetails(dto: CreateUserDetailsDto, userId: string) {
+    const { firstName, lastName, about, phoneNumber } = dto;
     const userDetails = await this.prisma.userDetails.create({
       data: {
         firstName,
@@ -63,8 +99,8 @@ export class UserService {
     return userDetails;
   }
 
-  async updateUserDetails(dto: UpdateUserDetailsDto) {
-    const { firstName, lastName, userId, about, phoneNumber } = dto;
+  async updateUserDetails(dto: UpdateUserDetailsDto, userId: string) {
+    const { firstName, lastName, about, phoneNumber } = dto;
     const updatedUserDetails = await this.prisma.userDetails.update({
       where: {
         userId,

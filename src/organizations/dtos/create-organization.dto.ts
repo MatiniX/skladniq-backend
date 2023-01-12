@@ -13,7 +13,27 @@ export class CreateOrganizationDto {
   description?: string;
 
   @ApiProperty()
-  @IsUUID()
+  @IsString()
   @IsNotEmpty()
-  addressId: string;
+  country: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  region: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  city: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  streetAddress: string;
+
+  @ApiProperty()
+  @IsString()
+  @IsNotEmpty()
+  postcode: string;
 }

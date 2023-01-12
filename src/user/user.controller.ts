@@ -1,5 +1,4 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Get,
@@ -13,10 +12,16 @@ import {
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { CreateUserDetailsDto, UpdateUserDetailsDto } from './dtos';
+import { CurrentUser } from 'src/common/decorators';
+import {
+  CreateUserDetailsDto,
+  UpdateUserDetailsDto,
+  UserDetailsDto,
+} from './dtos';
 import { UserService } from './user.service';
 
 @ApiTags('user')
@@ -25,11 +30,19 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get(':userId')
+  // @Get(':userId')
+  // @HttpCode(HttpStatus.OK)
+  // @ApiOkResponse()
+  // @ApiNotFoundResponse({ description: 'User does not exists' })
+  // getUserById(@Param('userId', ParseUUIDPipe) userId: string) {
+  //   return this.userService.getUserById(userId);
+  // }
+
+  @Get('/user-details')
   @HttpCode(HttpStatus.OK)
-  @ApiOkResponse()
-  getUserById(@Param('userId', ParseUUIDPipe) userId: string) {
-    return this.userService.getUserById(userId);
+  @ApiOkResponse({ type: UserDetailsDto })
+  getUserDetails(@CurrentUser('sub') userId): Promise<UserDetailsDto> {
+    return this.userService.getUserDetails(userId);
   }
 
   @Get('/organization/:organizationId')
@@ -51,14 +64,20 @@ export class UserController {
   @Post('/user-details')
   @HttpCode(HttpStatus.CREATED)
   @ApiCreatedResponse()
-  createUserDetails(@Body() dto: CreateUserDetailsDto) {
-    return this.userService.createUserDetails(dto);
+  createUserDetails(
+    @Body() dto: CreateUserDetailsDto,
+    @CurrentUser('sub') userId,
+  ) {
+    return this.userService.createUserDetails(dto, userId);
   }
 
   @Patch('/user-details')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse()
-  updateUserDetails(@Body() dto: UpdateUserDetailsDto) {
-    return this.userService.updateUserDetails(dto);
+  updateUserDetails(
+    @Body() dto: UpdateUserDetailsDto,
+    @CurrentUser('sub') userId,
+  ) {
+    return this.userService.updateUserDetails(dto, userId);
   }
 }

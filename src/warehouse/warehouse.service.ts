@@ -14,6 +14,18 @@ import {
 
 @Injectable()
 export class WarehouseService {
+  async getWarehousesByOrganization(organizationId: string) {
+    const allWarehouses = await this.prisma.warehouse.findMany({
+      where: {
+        organizationId,
+      },
+      include: {
+        address: true,
+      },
+    });
+
+    return allWarehouses;
+  }
   constructor(private prisma: PrismaService) {}
 
   async createWarehouse(dto: CreateWarehouseDto) {
@@ -22,8 +34,12 @@ export class WarehouseService {
         data: {
           name: dto.name,
           address: {
-            connect: {
-              id: dto.addressId,
+            create: {
+              country: dto.country,
+              region: dto.region,
+              city: dto.city,
+              streetAddress: dto.streetAddress,
+              postcode: dto.postcode,
             },
           },
           organization: {
@@ -157,7 +173,9 @@ export class WarehouseService {
     });
 
     if (!warehouseProduct) {
-      throw new NotFoundException('Ther is not such product in this warehouse');
+      throw new NotFoundException(
+        'There is not such product in this warehouse',
+      );
     }
 
     return warehouseProduct;

@@ -114,14 +114,14 @@ export class AuthService {
   ): Promise<Tokens> {
     const [at, rt] = await Promise.all([
       this.jwt.signAsync(
-        { sub: userId, email: email, roles, organizationId },
+        { sub: userId, email, roles, organizationId },
         {
           secret: AT_SECRET,
           expiresIn: AT_EXPIRATION,
         },
       ),
       this.jwt.signAsync(
-        { sub: userId, email: email },
+        { sub: userId, email },
         {
           secret: RT_SECRET,
           expiresIn: RT_EXPIRATION,

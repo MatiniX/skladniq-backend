@@ -7,7 +7,6 @@ import { JwtPayload, JwtPayloadWithRt } from '../types';
 
 const cookieExtractor = (req: Request) => {
   let rt = null;
-
   if (req && req.cookies) {
     rt = req.cookies['rt'];
   }
