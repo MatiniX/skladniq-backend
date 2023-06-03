@@ -1,8 +1,11 @@
 import {
   BadRequestException,
+  CACHE_MANAGER,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Cache } from 'cache-manager';
 import { Organization } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UserService } from 'src/user/user.service';
@@ -15,12 +18,15 @@ import {
   UpdateOrganizationDto,
   UpdateWarehousePermissionDto,
 } from './dtos';
+import { sendEmail } from 'src/common/helpers/send-email';
+import { SetRolesDto } from './dtos/set-roles.dto';
 
 @Injectable()
 export class OrganizationService {
   constructor(
     private prisma: PrismaService,
     private userService: UserService,
+    @Inject(CACHE_MANAGER) private cacheService: Cache,
   ) {}
 
   async getOrganizationById(id: string) {
@@ -118,7 +124,7 @@ export class OrganizationService {
     return true;
   }
 
-  async addMember(organizationId: string, memberId: string) {
+  async addMember(memberId: string, organizationId: string) {
     const organization = await this.prisma.organization.findUnique({
       where: {
         id: organizationId,
@@ -174,6 +180,10 @@ export class OrganizationService {
       },
     });
 
+    await this.prisma.organizationInvite.delete({
+      where: { userId_organizationId: { userId: memberId, organizationId } },
+    });
+
     return updatedOrganization.members;
   }
 
@@ -186,6 +196,31 @@ export class OrganizationService {
         data: {
           roles: {
             push: dto.role,
+          },
+        },
+        select: {
+          id: true,
+          roles: true,
+          email: true,
+          organizationId: true,
+        },
+      });
+
+      return user;
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async setRoles(dto: SetRolesDto) {
+    try {
+      const user = await this.prisma.user.update({
+        where: {
+          id: dto.userId,
+        },
+        data: {
+          roles: {
+            set: dto.roles,
           },
         },
         select: {
@@ -317,5 +352,23 @@ export class OrganizationService {
     } catch (error) {
       throw new BadRequestException(error);
     }
+  }
+
+  async sendInvitationEmail(email: string, orgId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    if (!user) {
+      throw new NotFoundException("User doesn't exists");
+    }
+
+    const invite = await this.prisma.organizationInvite.create({
+      data: { userId: user.id, organizationId: orgId },
+    });
+
+    return invite;
   }
 }

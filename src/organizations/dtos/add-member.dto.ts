@@ -5,10 +5,10 @@ export class AddMemberDto {
   @ApiProperty()
   @IsString()
   @IsUUID()
-  organizationId: string;
+  memberId: string;
 
   @ApiProperty()
   @IsString()
   @IsUUID()
-  memberId: string;
+  organizationId: string;
 }

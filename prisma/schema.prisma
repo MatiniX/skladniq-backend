@@ -24,6 +24,7 @@ model User {
   userDetails         UserDetails?
   warehousePermission WarehousePermission[]
   roles               OraganizationRole[]
+  OrganizationInvite  OrganizationInvite[]
 
   @@map("users")
 }
@@ -47,16 +48,17 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  name        String
-  description String?
-  active      Boolean     @default(true)
-  owner       User        @relation(name: "organization_owner", fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  ownerId     String      @unique @db.Uuid
-  address     Address     @relation(fields: [addressId], references: [id])
-  addressId   String      @unique @db.Uuid
-  members     User[]
-  warehouses  Warehouse[]
-  products    Product[]
+  name               String
+  description        String?
+  active             Boolean              @default(true)
+  owner              User                 @relation(name: "organization_owner", fields: [ownerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  ownerId            String               @unique @db.Uuid
+  address            Address              @relation(fields: [addressId], references: [id])
+  addressId          String               @unique @db.Uuid
+  members            User[]
+  warehouses         Warehouse[]
+  products           Product[]
+  OrganizationInvite OrganizationInvite[]
 
   @@map("organizations")
 }
@@ -152,10 +154,20 @@ model ProductAttribute {
   valuePerStorageUnit Float
   displayValue        String
   metricUnit          Float
-  product             Product?    @relation(fields: [productId], references: [id])
+  product             Product?    @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId           String?     @db.Uuid
 
   @@map("product_attributes")
+}
+
+model OrganizationInvite {
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String       @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String       @db.Uuid
+
+  @@id([userId, organizationId])
+  @@map("organization_invites")
 }
 
 enum Permission {

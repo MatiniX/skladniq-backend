@@ -14,6 +14,15 @@ import {
 
 @Injectable()
 export class WarehouseService {
+  async getWarehouseById(id: string) {
+    const warehouse = await this.prisma.warehouse.findUnique({
+      where: { id },
+      include: { address: true },
+    });
+
+    return warehouse;
+  }
+
   async getWarehousesByOrganization(organizationId: string) {
     const allWarehouses = await this.prisma.warehouse.findMany({
       where: {
@@ -157,6 +166,9 @@ export class WarehouseService {
       where: {
         warehouseId,
       },
+      include: {
+        product: true,
+      },
     });
 
     return allProducts;
@@ -169,6 +181,10 @@ export class WarehouseService {
           warehouseId,
           productId,
         },
+      },
+      include: {
+        product: { include: { attributes: true } },
+        warehouse: true,
       },
     });
 

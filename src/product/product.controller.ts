@@ -26,6 +26,7 @@ import {
   AddProductAttributeDto,
   CreateProductDto,
   ProductsByOrganizationDto,
+  UpdateProductAttributeDto,
   UpdateProductDto,
 } from './dtos';
 import { ProductService } from './product.service';
@@ -40,9 +41,13 @@ export class ProductController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse()
   getProductsByOrganization(@Query() query: ProductsByOrganizationDto) {
+    const includeAttr = query.includeAttr
+      ? toBoolean(query.includeAttr)
+      : false;
+
     return this.productService.getProductsByOrganization(
       query.orgId,
-      toBoolean(query.includeAttr),
+      includeAttr,
     );
   }
 
@@ -80,6 +85,15 @@ export class ProductController {
     return this.productService.addProductAttribute(dto);
   }
 
+  @Patch('attribute')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(OrganizationRolesGuard)
+  @OrganizationRoles('product_manager')
+  @ApiOkResponse()
+  updateProductAttribute(@Body() dto: UpdateProductAttributeDto) {
+    return this.productService.updateProductAttribute(dto);
+  }
+
   @Delete('attribute/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(OrganizationRolesGuard)
@@ -87,5 +101,14 @@ export class ProductController {
   @ApiNoContentResponse()
   removeProductAttribute(@Param('id', ParseUUIDPipe) attributeId: string) {
     return this.productService.removeProductAttribute(attributeId);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(OrganizationRolesGuard)
+  @OrganizationRoles('product_manager')
+  @ApiOkResponse()
+  removeProduct(@Param('id', ParseUUIDPipe) productId: string) {
+    return this.productService.removeProduct(productId);
   }
 }

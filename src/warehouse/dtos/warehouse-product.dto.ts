@@ -3,12 +3,12 @@ import { IsUUID, IsNotEmpty } from 'class-validator';
 
 export class WarehouseProductDto {
   @ApiProperty()
-  @IsUUID()
+  @IsUUID('all', { message: 'WarehouseId not UUID' })
   @IsNotEmpty()
   warehouseId: string;
 
   @ApiProperty()
-  @IsUUID()
+  @IsUUID('all', { message: 'ProductId not UUID' })
   @IsNotEmpty()
   productId: string;
 }

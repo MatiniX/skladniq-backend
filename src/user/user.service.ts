@@ -21,11 +21,26 @@ export class UserService {
         about: true,
       },
     });
-    const organization = await this.prisma.organization.findUnique({
-      where: { id: user.organizationId },
+
+    let organizationName = null;
+    if (user.organizationId !== null) {
+      const organization = await this.prisma.organization.findUnique({
+        where: { id: user.organizationId },
+      });
+      organizationName = organization.name;
+    }
+
+    return { organizationName, ...userDetails };
+  }
+
+  async getUserInvites(userId: string) {
+    const invites = await this.prisma.organizationInvite.findMany({
+      where: {
+        userId,
+      },
     });
 
-    return { organizationName: organization.name, ...userDetails };
+    return invites;
   }
 
   async getUserById(userId: string) {
@@ -60,6 +75,12 @@ export class UserService {
     const organizationMembers = await this.prisma.user.findMany({
       where: {
         organizationId,
+      },
+      select: {
+        id: true,
+        email: true,
+        roles: true,
+        userDetails: true,
       },
     });
 

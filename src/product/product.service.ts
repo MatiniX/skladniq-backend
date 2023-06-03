@@ -1,12 +1,15 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+import e from 'express';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   AddProductAttributeDto,
   CreateProductDto,
+  UpdateProductAttributeDto,
   UpdateProductDto,
 } from './dtos';
 
@@ -102,6 +105,35 @@ export class ProductService {
     }
   }
 
+  async updateProductAttribute(dto: UpdateProductAttributeDto) {
+    try {
+      const updatedAttribute = await this.prisma.productAttribute.update({
+        where: { id: dto.id },
+        data: {
+          name: dto.name,
+          metricUnit: dto.metricUnit,
+          displayValue: dto.displayValue,
+          unit: dto.unit,
+          valuePerStorageUnit: dto.valuePerStorageUnit,
+        },
+      });
+      return updatedAttribute;
+    } catch (error) {
+      if (error.code === 'P2025') {
+        this.addProductAttribute({
+          displayValue: dto.displayValue,
+          metricUnit: dto.metricUnit,
+          name: dto.name,
+          productId: dto.productId,
+          unit: dto.unit,
+          valuePerStorageUnit: dto.valuePerStorageUnit,
+        });
+      } else {
+        throw new BadRequestException(error);
+      }
+    }
+  }
+
   async removeProductAttribute(attributeId: string) {
     try {
       await this.prisma.productAttribute.delete({
@@ -113,6 +145,17 @@ export class ProductService {
       return true;
     } catch (error) {
       throw new BadRequestException(error);
+    }
+  }
+
+  async removeProduct(productId: string) {
+    try {
+      const deletedProduct = await this.prisma.product.delete({
+        where: { id: productId },
+      });
+      return deletedProduct;
+    } catch (error) {
+      throw new InternalServerErrorException(error);
     }
   }
 }

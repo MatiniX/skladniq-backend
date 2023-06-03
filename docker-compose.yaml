@@ -31,7 +31,7 @@ services:
 
   pgadmin:
     container_name: pgadmin_skladniq
-    image: dpage/pgadmin4
+    image: dpage/pgadmin4:latest
     environment:
       PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
       PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
@@ -44,6 +44,14 @@ services:
     networks:
       - postgres
     restart: unless-stopped
+  redis:
+    image: redis:6.2-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass eYVX7EwVmmxKPCDmwMtyKVge8oLd2t81
+    volumes:
+      - cache:/data
 
 networks:
   postgres:
@@ -52,3 +60,4 @@ networks:
 volumes:
   postgres:
   pgadmin:
+  cache:

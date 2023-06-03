@@ -34,10 +34,11 @@ import {
   UpdateWarehousePermissionDto,
 } from './dtos';
 import { OrganizationService } from './organization.service';
+import { SetRolesDto } from './dtos/set-roles.dto';
 
 @ApiTags('organizations')
 @ApiBearerAuth()
-@UseGuards(OrganizationRolesGuard)
+//@UseGuards(OrganizationRolesGuard)
 @Controller('organizations')
 export class OrganizationController {
   constructor(private organizationService: OrganizationService) {}
@@ -74,13 +75,23 @@ export class OrganizationController {
     return this.organizationService.updateWarehousePermission(dto);
   }
 
-  @Post('/add-member')
+  @Get('/send-invitation/:email')
   @HttpCode(HttpStatus.OK)
   @OrganizationRoles('employee_manager')
   @ApiOkResponse()
+  sendInvitation(
+    @Param('email') email: string,
+    @CurrentUser('organizationId') orgId,
+  ) {
+    return this.organizationService.sendInvitationEmail(email, orgId);
+  }
+
+  @Post('/add-member')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse()
   @ApiNotFoundResponse()
   addMember(@Body() dto: AddMemberDto) {
-    return this.organizationService.addMember(dto.organizationId, dto.memberId);
+    return this.organizationService.addMember(dto.memberId, dto.organizationId);
   }
 
   @Post('/add-role')
@@ -90,6 +101,15 @@ export class OrganizationController {
   @ApiNotFoundResponse()
   addRole(@Body() dto: AddRoleDto) {
     return this.organizationService.addRole(dto);
+  }
+
+  @Post('/set-roles')
+  @HttpCode(HttpStatus.OK)
+  @OrganizationRoles('employee_manager')
+  @ApiOkResponse()
+  @ApiNotFoundResponse()
+  setRoles(@Body() dto: SetRolesDto) {
+    return this.organizationService.setRoles(dto);
   }
 
   @Post('/create-permission')

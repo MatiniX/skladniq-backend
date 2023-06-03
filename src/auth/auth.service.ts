@@ -1,6 +1,14 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  CACHE_MANAGER,
+  ForbiddenException,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { OraganizationRole } from '@prisma/client';
+import { Cache } from 'cache-manager';
 import * as argon2 from 'argon2';
 import {
   AT_EXPIRATION,
@@ -9,11 +17,18 @@ import {
   RT_SECRET,
 } from 'src/common/constants';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { v4 } from 'uuid';
 import { SignInDto, SignUpDto, Tokens } from './dtos';
+import { FORGET_PASSWORD_PREFIX } from 'src/common/constants/redis-constants';
+import { sendEmail } from 'src/common/helpers/send-email';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwt: JwtService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+    @Inject(CACHE_MANAGER) private cacheService: Cache,
+  ) {}
 
   async signupLocal(dto: SignUpDto): Promise<Tokens> {
     const passwordHash = await argon2.hash(dto.password);
@@ -71,6 +86,49 @@ export class AuthService {
         hashedRT: null,
       },
     });
+  }
+
+  async generateChangePasswordToken(email: string) {
+    const user = await this.prisma.user.findFirst({ where: { email } });
+    if (!user) {
+      throw new NotFoundException('User with this email is not registered');
+    }
+
+    const token = v4();
+    await this.cacheService.set(
+      FORGET_PASSWORD_PREFIX + token,
+      user.id,
+      60 * 60 * 24 * 7,
+    );
+
+    await sendEmail(
+      email,
+      `<p>Click <a href=http://localhost:5173/change-password/${token}>here</a> to change your password.</p>`,
+    );
+
+    return true;
+  }
+
+  async changePassword(token: string, newPassword: string) {
+    const key = FORGET_PASSWORD_PREFIX + token;
+    const userId = await this.cacheService.get(key);
+    if (!userId) {
+      throw new BadRequestException('Your token has expired!');
+    }
+
+    const user = await this.prisma.user.findFirst({ where: { id: userId } });
+    if (!user) {
+      throw new BadRequestException('User no longer exists!');
+    }
+
+    const hashedPassword = await argon2.hash(newPassword);
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash: hashedPassword },
+    });
+    await this.cacheService.del(key);
+    return true;
   }
 
   async refreshTokens(userId: string, rt: string) {

@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Res,
   UseGuards,
@@ -21,9 +22,8 @@ import { Response } from 'express';
 import { CurrentUser, Public } from 'src/common/decorators';
 import { RtGuard } from 'src/common/guards/rt.guard';
 import { AuthService } from './auth.service';
-import { CurrentUserDto, SignUpDto, Tokens } from './dtos';
+import { ChangePasswordDto, CurrentUserDto, SignUpDto, Tokens } from './dtos';
 import { SignInDto } from './dtos/signin.dto';
-import { JwtPayload } from './types';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -80,6 +80,20 @@ export class AuthController {
   @ApiOkResponse({ description: 'User successfuly signed out' })
   signout(@CurrentUser('sub') userId: string) {
     return this.authService.signout(userId);
+  }
+
+  @Public()
+  @Get('/forgot-password/:email')
+  @HttpCode(HttpStatus.OK)
+  forgotPassword(@Param('email') email: string) {
+    return this.authService.generateChangePasswordToken(email);
+  }
+
+  @Public()
+  @Post('/change-password')
+  @HttpCode(HttpStatus.ACCEPTED)
+  changePassword(@Body() dto: ChangePasswordDto) {
+    return this.authService.changePassword(dto.token, dto.newPassword);
   }
 
   @Public()

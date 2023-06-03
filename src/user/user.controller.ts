@@ -30,19 +30,26 @@ import { UserService } from './user.service';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  // @Get(':userId')
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOkResponse()
-  // @ApiNotFoundResponse({ description: 'User does not exists' })
-  // getUserById(@Param('userId', ParseUUIDPipe) userId: string) {
-  //   return this.userService.getUserById(userId);
-  // }
+  @Get('/user-details/:userId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse()
+  @ApiNotFoundResponse({ description: 'User does not exists' })
+  getUserById(@Param('userId', ParseUUIDPipe) userId: string) {
+    return this.userService.getUserById(userId);
+  }
 
   @Get('/user-details')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({ type: UserDetailsDto })
   getUserDetails(@CurrentUser('sub') userId): Promise<UserDetailsDto> {
     return this.userService.getUserDetails(userId);
+  }
+
+  @Get('/user-invites')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse()
+  getUserInvites(@CurrentUser('sub') userId) {
+    return this.userService.getUserInvites(userId);
   }
 
   @Get('/organization/:organizationId')

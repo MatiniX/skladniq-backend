@@ -39,6 +39,14 @@ import { WarehouseService } from './warehouse.service';
 export class WarehouseController {
   constructor(private readonly warehouseService: WarehouseService) {}
 
+  @Get('/:warehouseId')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse()
+  @ApiParam({ name: 'warehouseId', schema: {} })
+  getWarehouseById(@Param('warehouseId', ParseUUIDPipe) warehouseId) {
+    return this.warehouseService.getWarehouseById(warehouseId);
+  }
+
   @Get('/organization/:organizationId')
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse()
@@ -59,7 +67,7 @@ export class WarehouseController {
     return this.warehouseService.getAllWarehouseProducts(warehouseId);
   }
 
-  @Get('product')
+  @Get('/get/single')
   @HttpCode(HttpStatus.OK)
   @UseGuards(WarehouseGuard)
   @WarehousePermissions('read', 'full', 'edit_settings', 'edit_inventory')
